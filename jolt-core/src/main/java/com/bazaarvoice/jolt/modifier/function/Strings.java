@@ -18,7 +18,9 @@ package com.bazaarvoice.jolt.modifier.function;
 import com.bazaarvoice.jolt.common.Optional;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings( "deprecated" )
 public class Strings {
@@ -78,6 +80,31 @@ public class Strings {
         }
     }
 
+     public static final class decode extends Function.ListFunction {
+        @Override
+        protected Optional<Object> applyList( final List<Object> argList ) 
+        {
+            Object firstvalue = argList.get(0);
+            Object lastvalue = firstvalue;
+              
+            Map<Object, Object> map = new HashMap<>();
+            int step = (argList.size()-1) / 2;
+            for(int i = 1; i < step; i += 2)
+            {
+              // 1 2 3 4
+              map.put(argList.get(i), argList.get(i+1));
+            }
+            
+            if(step*2+1 != argList.size())
+              lastvalue = argList.get(argList.size()-1);
+            
+            if(map.containsKey(firstvalue))
+              return Optional.of(map.get(firstvalue));
+            
+            return Optional.of(lastvalue);
+        }
+    }
+     
     public static final class substring extends Function.ListFunction {
 
         @Override
