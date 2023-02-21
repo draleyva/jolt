@@ -89,10 +89,10 @@ public class Strings {
               
             Map<Object, Object> map = new HashMap<>();
             int step = (argList.size()-1) / 2;
-            for(int i = 1; i < step; i += 2)
+            for(int i = 0; i < step; i += 1)
             {
               // 1 2 3 4
-              map.put(argList.get(i), argList.get(i+1));
+              map.put(argList.get(1+2*i), argList.get(1+2*i+1));
             }
             
             if(step*2+1 != argList.size())
