@@ -16,11 +16,15 @@
 package com.bazaarvoice.jolt.modifier.function;
 
 import com.bazaarvoice.jolt.common.Optional;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings( "deprecated" )
 public class Strings {
@@ -80,7 +84,84 @@ public class Strings {
         }
     }
 
-     public static final class decode extends Function.ListFunction {
+    static final Map<String, SimpleDateFormat> SIMPLEDATEFORMATMAP = new ConcurrentHashMap<>();
+    
+    public static String changeFormat(String oldFormat, String newFormat, String sdatetime, String defaultvalue) throws ParseException
+    {
+      SimpleDateFormat dateOldFormat;
+      SimpleDateFormat dateNewFormat;
+
+      if(!SIMPLEDATEFORMATMAP.containsKey(oldFormat))
+      {
+        dateOldFormat = new SimpleDateFormat(oldFormat);
+        SIMPLEDATEFORMATMAP.put(oldFormat, dateOldFormat);
+      }
+      else
+      {
+        dateOldFormat = SIMPLEDATEFORMATMAP.get(oldFormat);
+      }
+
+      if(!SIMPLEDATEFORMATMAP.containsKey(newFormat))
+      {
+        dateNewFormat = new SimpleDateFormat(newFormat);
+        SIMPLEDATEFORMATMAP.put(newFormat, dateNewFormat);
+      }
+      else
+      {
+        dateNewFormat = SIMPLEDATEFORMATMAP.get(newFormat);
+      }
+
+      Date datetime;
+
+      try
+      {
+        datetime = dateOldFormat.parse(sdatetime);
+      }
+      catch(ParseException e)
+      {
+        if(defaultvalue != null)
+        {
+          return defaultvalue;
+        }
+        else
+        {
+          throw e;
+        }
+      }
+
+      return dateNewFormat.format(datetime);
+    }
+    
+    public static final class format extends Function.ListFunction {
+        @Override
+        protected Optional<Object> applyList( final List<Object> argList ) 
+        {
+            Object firstvalue = argList.get(0);
+            Object type = argList.get(1);
+            Object source = argList.get(2);
+            Object target = argList.get(3);
+            
+            Object value = null;
+            
+            try
+            {
+              switch(type.toString())
+              {
+                case "DATETIME":
+                  value = changeFormat(String.valueOf(source), String.valueOf(target), String.valueOf(firstvalue), "");
+                break;
+              }
+            }
+            catch(Exception e)
+            {
+              value = "Exception : "+e.getMessage();
+            }
+            
+            return Optional.of(value);
+        }
+    }
+    
+    public static final class decode extends Function.ListFunction {
         @Override
         protected Optional<Object> applyList( final List<Object> argList ) 
         {
